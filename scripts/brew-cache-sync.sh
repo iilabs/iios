@@ -46,26 +46,30 @@ echo "==> Caching Homebrew artifacts defined in $BREWFILE"
 
 if [ ${#FORMULAE[@]} -gt 0 ]; then
     echo "    Fetching formula bottles: ${FORMULAE[*]}"
-    brew fetch --retry --force "${FORMULAE[@]}"
+    brew fetch --retry "${FORMULAE[@]}"
 fi
 
 if [ ${#CASKS[@]} -gt 0 ]; then
     echo "    Fetching casks: ${CASKS[*]}"
-    brew fetch --retry --force --cask "${CASKS[@]}"
+    brew fetch --retry --cask "${CASKS[@]}"
 fi
 
 if [ ${#FORMULAE[@]} -eq 0 ] && [ ${#CASKS[@]} -eq 0 ]; then
     echo "WARN: no formulae or casks discovered in $BREWFILE" >&2
 fi
 
-# Generate a lockfile so versions can be reused offline.
-if brew bundle lock --file "$BREWFILE" --quiet; then
-    LOCK_SOURCE="${BREWFILE}.lock.json"
-    if [ -f "$LOCK_SOURCE" ]; then
-        cp "$LOCK_SOURCE" "$LOCK_DEST"
+# Generate a lockfile so versions can be reused offline when supported.
+LOCK_SOURCE="${BREWFILE}.lock.json"
+if brew bundle --help 2>/dev/null | grep -q "bundle lock"; then
+    if brew bundle lock --file "$BREWFILE" --quiet >/dev/null 2>&1; then
+        if [ -f "$LOCK_SOURCE" ]; then
+            cp "$LOCK_SOURCE" "$LOCK_DEST"
+        fi
+    else
+        echo "WARN: brew bundle lock failed; skipping lockfile" >&2
     fi
 else
-    echo "WARN: failed to generate Brewfile.lock.json" >&2
+    echo "WARN: this version of brew bundle does not support 'lock'; skipping lockfile" >&2
 fi
 
 echo "==> Cached downloads stored in $DOWNLOAD_CACHE"
