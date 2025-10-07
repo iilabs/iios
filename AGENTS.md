@@ -82,7 +82,7 @@ Goals:
 - The booted OS can mount this as an additional Flatpak installation for instant access  
 - We’ll maintain scripts to rebuild, refresh, and mount these caches
 
-### Containers
+### OCI Images stored as Podman Container Images
 - Likely maps directly to `/var/lib/containers`  
 - Podman or Buildah can import/export OCI images from this cache
 
@@ -92,9 +92,19 @@ Goals:
 - Target: make OSTree layers mountable and reusable offline
 
 ### Brew
-- Unclear whether to use **system** or **user** Homebrew on Bluefin  
+- Uses a Brewfile to create the cache
 - Need to test which integrates best with bootc and ostree images  
 - Plan: cache downloaded bottles and reuse across builds
+
+### Squid
+- Prepare an offline-friendly HTTP proxy cache (e.g., `/var/spool/squid`) that can be snapshotted and shipped with the USB  
+- Requires investigation into running Squid rootless vs. packaging prebuilt cache directories  
+- Goal: leverage Squid when rebuilding systems so upstream repos resolve locally first
+
+### RPM Repositories
+- Mirror required RPMs plus metadata into a local repo structure under `cache/rpms`  
+- Decide whether to rely on `dnf download`, `reposync`, or `rpm-ostree` mirroring  
+- Target: allow rpm-based installers to run fully offline using the mirrored repo
 
 ---
 
@@ -117,12 +127,20 @@ Goals:
    - Confirm whether Bluefin supports system-level Homebrew
    - Add caching for bottles and formulas in `cache/brew`
 
-5. **Automation**
+5. **Squid**
+   - Prototype building a reusable Squid cache directory that can be distributed  
+   - Explore rsync/btrfs snapshot workflows for updating the cache offline
+
+6. **RPM Mirrors**
+   - Identify core packages that should be mirrored into `cache/rpms`  
+   - Automate metadata refresh (`createrepo_c`, etc.) for consistency with upstream
+
+7. **Automation**
    - Write `build-cache.sh` to regenerate all caches  
    - Write `rehydrate.sh` to mount them on a booted system  
    - Add Makefile targets or agent tasks for both
 
-6. **Documentation**
+8. **Documentation**
    - Add diagrams showing how caches map into the live filesystem  
    - Document how to rebuild a USB entirely offline
 
