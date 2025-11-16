@@ -60,7 +60,25 @@ rpm-ostree install \
 
 
 # this installs a package from fedora repos
-dnf5 install -y tmux 
+dnf5 install -y tmux
+
+echo "[swift-lang] installing Swift programming language"
+rpm-ostree install swift-lang
+
+echo "[busybox-build-deps] installing dependencies for building busybox on glibc"
+rpm-ostree install \
+  ncurses-devel \
+  glibc-devel \
+  glibc-static \
+  kernel-headers
+
+echo "[busybox-build-deps] installing dependencies for building busybox on musl"
+rpm-ostree install \
+  musl-gcc \
+  musl-libc \
+  musl-libc-static \
+  musl-devel \
+  musl-clang
 
 # Use a COPR Example:
 #
