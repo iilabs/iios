@@ -19,12 +19,13 @@ Guidelines for creating, updating, and consuming each cache managed under `./cac
 - **Update**: Adjust the Brewfile, then rerun the script. `brew fetch` is idempotent; cached bottles stay untouched.
 - **Use on Target**: Set `HOMEBREW_CACHE=/path/to/cache/brew/cache` before running `brew bundle install --file <Brewfile>`. Include the lockfile to pin versions when available.
 
-## Squid Cache (Planned)
-- **Populate**: Plan to pre-build `cache/squid` by running Squid against upstream repos, then copying `/var/spool/squid` (or an equivalent cache directory) into the USB workspace. Investigate `squid -z` and Btrfs snapshots for reproducible exports.
-- **Update**: Refresh the cache on an online host, snapshot the resulting directory, and replace `cache/squid` with the new snapshot.
-- **Use on Target**: Bind-mount `cache/squid` to `/var/spool/squid` and start Squid from the USB to serve cached RPM/HTTP traffic instantly.
+## DNF Cache
+- **Populate**: `just dnf-prefetch` (or run [`scripts/dnf-prefetch.sh`](./scripts/dnf-prefetch.sh)) to launch the base image with `cache/dnf` and `cache/rpm-ostree` mounted. The helper installs the appropriate DNF plugins, runs `dnf makecache`, and mirrors enabled repositories with `dnf reposync` so cached RPMs and metadata land in the shared directory.
+- **Update**: Re-run the script whenever you need newer packages; it refreshes metadata and downloads changed RPMs in place.
+- **Use on Target**: Bind-mount `cache/dnf` to `/var/cache/dnf` (or set `cachedir` in `/etc/dnf/dnf.conf`) before invoking `dnf`/`dnf5`. Mount `cache/rpm-ostree` to `/var/cache/rpm-ostree` for layering operations. Copy both directories onto removable media to share the cache across systems.
 
-## RPM Repository Cache (Planned)
+## RPM Repository Cache (Legacy idea)
+*The new DNF cache workflow above already mirrors enabled repositories with `dnf reposync`. Keep this section only if you need a handcrafted repo layout or additional metadata customization.*
 - **Populate**: Mirror required RPMs into `cache/rpms` using tools like `dnf download`, `reposync`, or `rpm-ostree` pulls, then run `createrepo_c` to generate metadata.
 - **Update**: Periodically re-run the mirroring tool and metadata regeneration to pick up security updates.
 - **Use on Target**: Configure `dnf`/`rpm-ostree` with a file-based repo pointing at `cache/rpms`, or bind-mount the directory into `/var/cache/dnf` so that installers consume the local mirror.

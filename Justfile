@@ -44,6 +44,13 @@ clean:
     rm -f output.env
     rm -f output/
 
+# Warm and sync the shared DNF cache
+[group('Utility')]
+dnf-prefetch:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ./scripts/dnf-prefetch.sh
+
 # Sudo Clean Repo
 [group('Utility')]
 [private]
@@ -94,9 +101,17 @@ build $target_image=image_name $tag=default_tag:
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
 
+    mkdir -p cache/dnf cache/rpm-ostree
+
+    # Use host.containers.internal to access host services from container
+    # Proxy will use Squid CA certificate that's copied into the container
     podman build \
         "${BUILD_ARGS[@]}" \
+        --build-arg HTTP_PROXY=http://host.containers.internal:4128 \
+        --build-arg HTTPS_PROXY=http://host.containers.internal:4128 \
+        --build-arg NO_PROXY=localhost,127.0.0.1,::1 \
         --pull=newer \
+        --progress=plain \
         --tag "${target_image}:${tag}" \
         .
 

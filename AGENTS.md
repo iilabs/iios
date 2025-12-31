@@ -100,6 +100,7 @@ Goals:
 - Prepare an offline-friendly HTTP proxy cache (e.g., `/var/spool/squid`) that can be snapshotted and shipped with the USB  
 - Requires investigation into running Squid rootless vs. packaging prebuilt cache directories  
 - Goal: leverage Squid when rebuilding systems so upstream repos resolve locally first
+- Build a custom Squid image (via `squid/Containerfile`) supporting TLS interception and ship the generated CA so clients trust bumped connections
 
 ### RPM Repositories
 - Mirror required RPMs plus metadata into a local repo structure under `cache/rpms`  
@@ -129,7 +130,8 @@ Goals:
 
 5. **Squid**
    - Prototype building a reusable Squid cache directory that can be distributed  
-   - Explore rsync/btrfs snapshot workflows for updating the cache offline
+   - Explore rsync/btrfs snapshot workflows for updating the cache offline  
+   - Automate TLS interception artifacts (generate CA, install into clients, track expiry)
 
 6. **RPM Mirrors**
    - Identify core packages that should be mirrored into `cache/rpms`  
