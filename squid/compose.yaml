@@ -1,0 +1,25 @@
+services:
+  squid-cache:
+    image: ${SQUID_IMAGE:-localhost/iios-squid:latest}
+    build:
+      context: ..
+      dockerfile: squid/Containerfile
+    container_name: squid-cache
+    ports:
+      - "53128:3128"
+    volumes:
+      - ./squid.conf:/etc/squid/squid.conf:Z
+      - ../cache/squid/var:/var/spool/squid:Z
+      - ../cache/squid/log:/var/log/squid:Z
+      - ../cache/squid/ca:/etc/squid/certs:Z
+    environment:
+      SQUID_CACHE_MEM: ${SQUID_CACHE_MEM:-256MB}
+    command:
+      - /usr/sbin/squid
+      - -N
+      - -Y
+      - -d1
+    restart: unless-stopped
+
+# Podman Compose extension fields
+volumes: {}

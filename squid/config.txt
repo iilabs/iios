@@ -1,0 +1,28 @@
+# satishweb/squid-ssl-proxy configuration
+
+When utilizing the published image from https://github.com/satishweb/squid-ssl-proxy there are a few places to configure environment varibles, squid.conf 
+
+There is an envsubst run on the squid.conf, so the config needs to be mounted at /templates/squid.sample.conf. I think it's fine if the source file is just squid.conf.
+
+We need to set the following environment variables in our systemd execution of our squid container.
+
+#set enviromental values for certificate CA generation
+CERT_CN=ii.coop
+CERT_ORG=iilabs
+CERT_OU=squid
+CERT_COUNTRY=US
+SQUID_PROXY_PORT=3128
+SQUID_PROXY_SSLBUMP_PORT=4128
+
+#/run/secrets/ENVNAME
+Runtime environment variables can be overridden here.
+This is where DEBUG can be set.
+
+DEBUG= # set to 1 for set -x debuging
+It might be nice to be able to set the DNS server used by the container.   
+
+# IF we find we need further runtime configuration, we can add an /app-config shell script to launch.
+
+#!/bin/sh # mounted at /app-config
+set -e
+exec $@

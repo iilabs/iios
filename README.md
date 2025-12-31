@@ -130,6 +130,10 @@ The [Containerfile](./Containerfile) defines the operations used to customize th
 
 The [build.sh](./build_files/build.sh) file is called from your Containerfile. It is the best place to install new packages or make any other customization to your system. There are customization examples contained within it for your perusal.
 
+## DNF Cache
+
+Use [`scripts/dnf-prefetch.sh`](./scripts/dnf-prefetch.sh) (or `just dnf-prefetch`) to warm a shared DNF cache. The script launches the build image with `cache/dnf` and `cache/rpm-ostree` bind-mounted from the host, runs `dnf makecache`, and then mirrors enabled repositories with `dnf reposync`. Your image build mounts the same directories inside the `RUN /ctx/build.sh` step, so both `dnf5` and `rpm-ostree` reuse the downloaded payloads. Refresh the cache whenever you need newer packages or want to take the mirror snapshot to another system.
+
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) Github Actions workflow creates your custom OCI image and publishes it to the Github Container Registry (GHCR). By default, the image name will match the Github repository name. There are several environment variables at the start of the workflow which may be of interest to change.
@@ -176,6 +180,7 @@ To use it, you must have installed [just](https://just.systems/man/en/introducti
 - `image_name`: The name of the image (default: "image-template").
 - `default_tag`: The default tag for the image (default: "latest").
 - `bib_image`: The Bootc Image Builder (BIB) image (default: "quay.io/centos-bootc/bootc-image-builder:latest").
+
 
 ## Building The Image
 
